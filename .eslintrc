@@ -1,0 +1,88 @@
+{
+    "env": {
+        "es6": true,
+        "node": true
+    },
+    "extends": [
+        "airbnb-base"
+    ],
+    "globals": {
+        "async": false,
+        "sails": false
+    },
+    "rules": {
+        "space-before-function-paren": [
+            "error",
+            "always"
+        ],
+        "quote-props": "off",
+        "no-param-reassign": "off",
+        "no-plusplus": "off",
+        "comma-dangle": "off",
+        "consistent-return": "off",
+        "no-cond-assign": [
+            "error",
+            "except-parens"
+        ],
+        "max-len": [
+            "warn",
+            120
+        ],
+        "default-case": "off",
+        "indent": [
+            "error",
+            4,
+            {
+                "SwitchCase": 1
+            }
+        ],
+        "no-console": "warn",
+        "no-shadow": [
+            "error",
+            {
+                "allow": [
+                    "callback",
+                    "err",
+                    "error",
+                    "path"
+                ]
+            }
+        ],
+        "no-undef": "off",
+        "no-underscore-dangle": "off",
+        "no-unused-vars": "warn",
+        "quotes": [
+            "error",
+            "single",
+            {
+                "allowTemplateLiterals": true
+            }
+        ],
+        "global-require": "off",
+        "linebreak-style": [
+            "error",
+            "windows"
+        ],
+        "object-curly-spacing": [
+            "error",
+            "always"
+        ],
+        "object-curly-newline": [
+            "error",
+            {
+                "ObjectExpression": {
+                    "multiline": true
+                },
+                "ObjectPattern": {
+                    "multiline": true
+                },
+                "ImportDeclaration": "never",
+                "ExportDeclaration": { "multiline": true, "minProperties": 3 }
+            }
+        ],
+        "strict": "off"
+    },
+    "parserOptions": {
+        "sourceType": "script"
+    }
+}
