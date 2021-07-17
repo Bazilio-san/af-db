@@ -853,7 +853,7 @@ sql.recordSchemaToArray = (recordSchemaAssoc, omitFields = [], fieldTypeCorrecti
         recordSchemaAssoc[fieldName].type = type;
     });
     _.each(recordSchemaAssoc, (item, name) => {
-        if (/_json$/i.test(name)) {
+        if (/_json$/i.test(name) || /[a-z\d]Json$/.test(name)) {
             item.type = 'json';
         }
     });
