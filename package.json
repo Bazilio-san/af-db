@@ -1,6 +1,6 @@
 {
     "name": "af-db",
-    "version": "0.0.13",
+    "version": "0.0.15",
     "description": "A highly specialized function library",
     "main": "index.js",
     "scripts": {
