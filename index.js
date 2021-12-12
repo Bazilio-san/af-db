@@ -137,7 +137,7 @@ sql.getRecordSchema3 = async (connectionId, schemaAndTable, options = {}) => {
     request.stream = false;
     let res;
     try {
-        res = await request.query(`SELECT TOP (1) *
+        res = await request.query(`SELECT TOP(1) *
                                    FROM ${schemaAndTable}`);
     } catch (err) {
         echo.mErr(err, {
@@ -250,7 +250,8 @@ SELECT @total as total, @i as inserted, @u as updated;
             const values = `(${packet.map((r) => (insertFields.map((fName) => (r[fName] === undefined ? 'NULL' : r[fName]))
                 .join(',')))
                 .join(`)\n,(`)})`;
-            return `INSERT INTO ${schemaAndTable} (${insertFieldsList}) ${addOutputInserted ? ' OUTPUT inserted.* ' : ''} VALUES ${values}`;
+            return `INSERT INTO ${schemaAndTable} (${insertFieldsList}) ${addOutputInserted ? ' OUTPUT inserted.* ' : ''}
+                    VALUES ${values}`;
         },
         getUpdateSQL (record) {
             const recordForSQL = sql.getRecordValuesForSQL(record, this.schema);
@@ -694,6 +695,7 @@ sql.on('error', (err) => {
 const pools = {};
 
 const db = {
+    getFirstConfigId: () => Object.keys(config.get('database') || {}).filter((v) => !['dialect', '_common_'].includes(v))[0],
     getDbConfig: (connectionId) => config.get(`database.${connectionId}`),
 
     /**
