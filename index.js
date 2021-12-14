@@ -277,7 +277,7 @@ sql.binToHexString = (value) => {
     if (!value) {
         return null;
     }
-    return `0x${value.toString('hex')
+    return `0x${value.toString(16)
         .toUpperCase()}`;
 };
 
