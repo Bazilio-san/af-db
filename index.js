@@ -44,7 +44,7 @@ sql.setTimeZone = (tz) => {
  * @param {boolean} escapeOnlySingleQuotes
  * @returns {string}
  */
-sql.s = (str, nullable = false, len = 0, default_ = null, noQuotes, escapeOnlySingleQuotes = false) => {
+sql.s = (str, nullable = false, len = 0, default_ = null, noQuotes = false, escapeOnlySingleQuotes = false) => {
     str = (String(str || '')).trim();
     if (!str) {
         if (nullable) return 'NULL';
@@ -454,6 +454,7 @@ sql.getValueForSQL = (value, fieldSchema, validate = false, escapeOnlySingleQuot
         case 'integer':
             return prepareNumber(-2147483648, 2147483647);
         case sql.BigInt:
+            // eslint-disable-next-line no-loss-of-precision
             return prepareNumber(-9223372036854775808, 9223372036854775807);
         case 'number':
         case sql.Decimal:
@@ -850,7 +851,7 @@ module.exports = {
  * @param {Array<String>} pickFields - массив имен полей, которые нужно оставить в схеме
  * @returns {dbRecordSchema}
  */
-sql.recordSchemaToArray = (recordSchemaAssoc, omitFields = [], fieldTypeCorrection = [], pickFields) => {
+sql.recordSchemaToArray = (recordSchemaAssoc, omitFields = [], fieldTypeCorrection = [], pickFields = undefined) => {
     _.each(fieldTypeCorrection, (type, fieldName) => {
         recordSchemaAssoc[fieldName].type = type;
     });
