@@ -1,4 +1,5 @@
 export * as db from './db';
+
 export {
   sql,
   setTimeZone,
@@ -19,6 +20,7 @@ export {
   getRowsAffected,
   recordSchemaToArray,
 } from './sql';
+
 export {
   IDBConfig,
   IFieldSchema,
@@ -30,4 +32,9 @@ export {
   TRecordSchema,
   TRecordSchemaAssoc,
   TRecordSet,
+  TRecordSetAssoc,
+  TMergeRules,
+  TMergeResult,
+  TRecordKey,
+  TGetPoolConnectionOptions,
 } from './interfaces';
