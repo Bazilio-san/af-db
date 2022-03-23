@@ -1,0 +1,7 @@
+---
+logger:
+  level: info
+  colorize: true
+timezone: Europe/Moscow
+#timezone: America/Toronto
+

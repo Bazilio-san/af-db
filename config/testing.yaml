@@ -1,0 +1,20 @@
+---
+logger:
+  level: verbose
+timezone: Europe/Moscow
+database:
+  dialect: mssql
+  options:
+    stream: false
+    requestTimeout: 360000000
+    connectionTimeout: 36000000
+    pool:
+      max: 10
+      min: 1
+      idleTimeoutMillis: 30000
+  db_in_config:
+    server: localhost
+    port: 9999
+    database: testDb
+    user: user
+    password: password

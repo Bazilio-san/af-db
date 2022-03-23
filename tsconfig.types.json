@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "__tests__/**/*.*",
+    "test/**/*.*"
+  ],
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "es2019",
+    "removeComments": false,
+    "declaration": true,
+    "declarationMap": true,
+    "declarationDir": "dist/types",
+    "emitDeclarationOnly": true
+  }
+}
