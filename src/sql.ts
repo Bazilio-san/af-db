@@ -8,11 +8,20 @@ import * as moment from 'moment-timezone';
 import * as _ from 'lodash';
 import * as cache from 'memory-cache';
 import {
-  IDBConfig, IFieldSchema, IGetMergeSQLOptions, TDBRecord, TFieldName, TFieldTypeCorrection, TGetRecordSchemaOptions, TRecordSchema, TRecordSchemaAssoc, TRecordSet,
+  IDBConfig,
+  IFieldSchema,
+  IGetMergeSQLOptions,
+  TDBRecord,
+  TFieldName,
+  TFieldTypeCorrection,
+  TGetRecordSchemaOptions,
+  TRecordSchema,
+  TRecordSchemaAssoc,
+  TRecordSet,
 } from './interfaces';
 import * as db from './db';
 
-const sql = require('mssql');
+export const sql = require('mssql');
 const echo = require('af-echo');
 const U = require('af-fns');
 
@@ -37,14 +46,14 @@ const q = (val: string, noQuotes?: boolean): string => (noQuotes ? val : `'${val
  * Влияет на время, которое парсится из строки в функции getValueForSQL()
  * Функция используется для целей тестирования.
  */
-const setTimeZone = (tz: string) => {
+export const setTimeZone = (tz: string) => {
   moment.tz.setDefault(tz);
 };
 
 /**
  * Подготовка строки для передачи в SQL
  */
-const prepareSqlString = (
+export const prepareSqlString = (
   // Значение, которое нужно подготовить для передачи в SQL
   str: string | number | null,
   // Подставлять NULL, если значение пусто или пустая строка.
@@ -68,6 +77,8 @@ const prepareSqlString = (
   return q(String(str), noQuotes);
 };
 
+export const s = prepareSqlString;
+
 const FIELD_SCHEMA_PROPS = ['index', 'name', 'length', 'type', 'scale', 'precision', 'nullable', 'caseSensitive',
   'identity', 'mergeIdentity', 'readOnly', 'inputDateFormat', 'default_'];
 
@@ -76,7 +87,7 @@ const FIELD_SCHEMA_PROPS = ['index', 'name', 'length', 'type', 'scale', 'precisi
  * Поля с суффиксом _json получают тип "json". Остальные корректировки берутся из fieldTypeCorrection
  * Например, для полей типа datetime можно передавать свойство inputDateFormat
  */
-const correctRecordSchema = (
+export const correctRecordSchema = (
   recordSchemaAssoc: TRecordSchemaAssoc,
   // объект корректировок
   fieldTypeCorrection?: TFieldTypeCorrection,
@@ -113,13 +124,13 @@ const correctRecordSchema = (
   }
 };
 
-const binToHexString = (value: any) => (value ? `0x${value.toString(16).toUpperCase()}` : null);
+export const binToHexString = (value: any) => (value ? `0x${value.toString(16).toUpperCase()}` : null);
 
 /**
  * Возвращает значение, готовое для использования в строке SQL запроса
  * validate - Флаг необходимости валидации значения
  */
-const getValueForSQL = (value: any, fieldSchema: IFieldSchema | string, validate?: boolean, escapeOnlySingleQuotes?: boolean): string | number | null => {
+export const getValueForSQL = (value: any, fieldSchema: IFieldSchema | string, validate?: boolean, escapeOnlySingleQuotes?: boolean): string | number | null => {
   if (typeof fieldSchema === 'string') {
     fieldSchema = { type: fieldSchema };
   }
@@ -316,7 +327,7 @@ const getValueForSQL = (value: any, fieldSchema: IFieldSchema | string, validate
  *
  * Все поля записи обрабатываются функцией getValueForSQL
  */
-const prepareRecordForSQL = (
+export const prepareRecordForSQL = (
   // запись для вставки/обновления таблицы БД
   record: TDBRecord,
   // объект описания структуры таблицы
@@ -344,7 +355,7 @@ const prepareRecordForSQL = (
  *
  * Все поля всех записей обрабатываются функцией getValueForSQL
  */
-const prepareDataForSQL = (
+export const prepareDataForSQL = (
   // массив объектов - записей для вставки/обновления таблицы БД
   recordSet: TRecordSet,
   // объект описания структуры таблицы
@@ -377,7 +388,7 @@ const prepareDataForSQL = (
  * Возвращает рекорд, в котором все значения преобразованы в строки и подготовлены для прямой вставки в SQL
  * В частности, если значение типа строка, то оно уже заключено в одинарные кавычки
  */
-const getRecordValuesForSQL = (record: TDBRecord, recordSchema: TRecordSchema): TDBRecord => {
+export const getRecordValuesForSQL = (record: TDBRecord, recordSchema: TRecordSchema): TDBRecord => {
   const recordValuesForSQL = {};
   const validate = undefined;
   const escapeOnlySingleQuotes = true;
@@ -395,7 +406,7 @@ const getRecordValuesForSQL = (record: TDBRecord, recordSchema: TRecordSchema): 
  * Если asArray = true, то вернет TRecordSchema, при этом удалит поля, указанные в omitFields
  * Иначе вернет TRecordSchemaAssoc
  */
-const getRecordSchema3 = async (
+export const getRecordSchema3 = async (
   // ID соединения (borf|cep|hr|global)
   connectionId: string,
   // Субъект в выражении FROM для таблицы, схему которой нужно вернуть
@@ -561,7 +572,7 @@ SELECT @total as total, @i as inserted, @u as updated;
  * @param {string} strSQL
  * @returns {string}
  */
-const wrapTransaction = (strSQL: string) => `BEGIN TRY
+export const wrapTransaction = (strSQL: string) => `BEGIN TRY
     BEGIN TRANSACTION;
 
     ${strSQL}
@@ -589,7 +600,7 @@ END CATCH;`;
 /**
  * Возвращает проверенное и серилизованное значение
  */
-const serialize = (value: any, fieldSchema: IFieldSchema): string | number | null => {
+export const serialize = (value: any, fieldSchema: IFieldSchema): string | number | null => {
   const val = getValueForSQL(value, fieldSchema);
   if (val == null || val === 'NULL') {
     return null;
@@ -606,7 +617,7 @@ const serialize = (value: any, fieldSchema: IFieldSchema): string | number | nul
  *
  * quotes - Если true - строка оборачивается в одинарные кавычки
  */
-const startOfDate = (val: string | Date, quotes: boolean = false): string | null => {
+export const startOfDate = (val: string | Date, quotes: boolean = false): string | null => {
   const date = moment(val);
   if (!date.isValid()) {
     return quotes ? 'NULL' : null;
@@ -621,7 +632,7 @@ const startOfDate = (val: string | Date, quotes: boolean = false): string | null
  * val - дата-время строкой или Data
  * quotes - Если true - строка оборачивается в одинарные кавычки
  */
-const endOfDate = (val: string | Date, quotes: boolean = false): string | null => {
+export const endOfDate = (val: string | Date, quotes: boolean = false): string | null => {
   const date = moment(val);
   if (!date.isValid()) {
     return quotes ? 'NULL' : null;
@@ -633,7 +644,7 @@ const endOfDate = (val: string | Date, quotes: boolean = false): string | null =
 /**
  * Возвращает подготовленное выражение SET для использования в UPDATE
  */
-const getSqlSetExpression = (record: TDBRecord, recordSchema: TRecordSchema): string => {
+export const getSqlSetExpression = (record: TDBRecord, recordSchema: TRecordSchema): string => {
   const setArray: string[] = [];
   const validate = undefined;
   const escapeOnlySingleQuotes = true;
@@ -651,7 +662,7 @@ const getSqlSetExpression = (record: TDBRecord, recordSchema: TRecordSchema): st
  *
  * addOutputInserted - Если true, добавляется выражение OUTPUT inserted.* перед VALUES
  */
-const getSqlValuesExpression = (record: TDBRecord, recordSchema: TRecordSchema, addOutputInserted: boolean = false): string => {
+export const getSqlValuesExpression = (record: TDBRecord, recordSchema: TRecordSchema, addOutputInserted: boolean = false): string => {
   const fieldsArray: string[] = [];
   const valuesArray: string[] = [];
   const validate = undefined;
@@ -666,14 +677,14 @@ const getSqlValuesExpression = (record: TDBRecord, recordSchema: TRecordSchema, 
   return `([${fieldsArray.join('], [')}]) ${addOutputInserted ? ' OUTPUT inserted.* ' : ''} VALUES (${valuesArray.join(', ')})`;
 };
 
-const getRowsAffected = (qResult: any) => (qResult.rowsAffected && qResult.rowsAffected.reduce((a: number, v: number) => a + v, 0)) || 0;
+export const getRowsAffected = (qResult: any) => (qResult.rowsAffected && qResult.rowsAffected.reduce((a: number, v: number) => a + v, 0)) || 0;
 
 /**
  * @deprecated since version 2.0.0
  * Преобразование объекта метаданных <queryResult>.recordset.columns в массив,
  * упорядоченный по порядку следования полей в БД
  */
-const recordSchemaToArray = (
+export const recordSchemaToArray = (
   recordSchemaAssoc: TRecordSchemaAssoc,
   // массив имен полей, которые нужно удалить из схемы
   omitFields: string[] = [],
@@ -715,14 +726,10 @@ Object.assign(sql, {
   startOfDate,
   endOfDate,
   getRecordValuesForSQL,
-
   getSqlSetExpression,
   getSqlValuesExpression,
   prepareRecordForSQL,
-
   prepareDataForSQL,
   getRowsAffected,
   recordSchemaToArray,
 });
-
-export { sql };

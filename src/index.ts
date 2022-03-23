@@ -1,2 +1,33 @@
 export * as db from './db';
-export { sql } from './sql';
+export {
+  sql,
+  setTimeZone,
+  s,
+  correctRecordSchema,
+  getRecordSchema3,
+  binToHexString,
+  wrapTransaction,
+  getValueForSQL,
+  serialize,
+  startOfDate,
+  endOfDate,
+  getRecordValuesForSQL,
+  getSqlSetExpression,
+  getSqlValuesExpression,
+  prepareRecordForSQL,
+  prepareDataForSQL,
+  getRowsAffected,
+  recordSchemaToArray,
+} from './sql';
+export {
+  IDBConfig,
+  IFieldSchema,
+  IGetMergeSQLOptions,
+  TDBRecord,
+  TFieldName,
+  TFieldTypeCorrection,
+  TGetRecordSchemaOptions,
+  TRecordSchema,
+  TRecordSchemaAssoc,
+  TRecordSet,
+} from './interfaces';
