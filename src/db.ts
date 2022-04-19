@@ -4,6 +4,7 @@ import * as moment from 'moment-timezone';
 import * as _ from 'lodash';
 import { TGetPoolConnectionOptions } from './interfaces';
 
+const U = require('af-fns');
 const sql = require('mssql');
 const echo = require('af-echo');
 
@@ -30,16 +31,27 @@ export const getPoolConnection = async (connectionId: string, options: TGetPoolC
   let lb = -4;
   try {
     let pool = pools[connectionId];
-    if (pool) {
+    if (pool?.connected) {
       return pool;
     }
     lb = -8;
     const cfg: any = config.get('database');
     const dbConfig = config.util.extendDeep({}, cfg._common_ || {}, cfg[connectionId]);
     lb = -12;
+    if (pool?.connecting) {
+      const startTs = Date.now();
+      while (pool?.connecting && (Date.now() - startTs < dbConfig.connectionTimeout)) {
+        // eslint-disable-next-line no-await-in-loop
+        await U.sleep(100);
+      }
+      if (pool?.connected) {
+        return pool;
+      }
+      echo.error(prefix, `Can't connect connectionId "${connectionId}"`);
+    }
     pool = new sql.ConnectionPool(dbConfig);
     if (typeof pool !== 'object') {
-      echo.error(prefix, `Cant create connection pool "${connectionId}"`);
+      echo.error(prefix, `Can't create connection pool "${connectionId}"`);
       process.exit(0);
     }
     pools[connectionId] = pool;
