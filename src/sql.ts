@@ -217,7 +217,7 @@ export const getValueForSQL = (value: any, fieldSchema: IFieldSchema | string, v
         case 'datetime':
         case sql.DateTime:
         case sql.DateTime2:
-          return q(val.format(`YYYY-MM-DDTHH:mm:ss.SSS0`).substring(0, 23), noQuotes);
+          return q(val.format(`YYYY-MM-DDTHH:mm:ss.SSSZ`).substring(0, 23) + val.format('Z'), noQuotes);
         case 'time':
         case sql.Time:
           return q(val.format('HH:mm:ss.SSS0')
