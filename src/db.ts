@@ -89,7 +89,7 @@ export const getPoolConnection = async (connectionId: string, options: TGetPoolC
  * prefix - Префикс в сообщении о закрытии пула (название синхронизации)
  * noEcho - подавление сообщений о закрытии соединения
  */
-export const close = (poolsToClose: any | any[], prefix?: string, noEcho?: boolean) => {
+export const close = async (poolsToClose: any | any[], prefix?: string, noEcho?: boolean) => {
   if (!Array.isArray(poolsToClose)) {
     poolsToClose = [poolsToClose];
   }
@@ -108,7 +108,9 @@ export const close = (poolsToClose: any | any[], prefix?: string, noEcho?: boole
         delete pools[connectionId];
       }
       if (pool && pool.close) {
-        pool.close().then(() => {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await pool.close();
           if (!noEcho && connectionId) {
             const msg = `pool "${connectionId}" closed`;
             if (prefix) {
@@ -117,7 +119,9 @@ export const close = (poolsToClose: any | any[], prefix?: string, noEcho?: boole
               echo.info(msg);
             }
           }
-        });
+        } catch (err) {
+          //
+        }
       }
     }
   }
@@ -129,9 +133,9 @@ export const close = (poolsToClose: any | any[], prefix?: string, noEcho?: boole
  * prefix - Префикс в сообщении о закрытии пула (название синхронизации)
  * noEcho - подавление сообщений о закрытии соединения
  */
-export const closeAllConnections = (prefix?: string, noEcho?: boolean) => {
+export const closeAllConnections = async (prefix?: string, noEcho?: boolean) => {
   const poolsToClose = _.map(pools, (p) => p);
-  close(poolsToClose, prefix, noEcho);
+  await close(poolsToClose, prefix, noEcho);
 };
 
 /**
@@ -140,8 +144,8 @@ export const closeAllConnections = (prefix?: string, noEcho?: boolean) => {
  * poolsToClose - пул или массив пулов
  * prefix - Префикс в сообщении о закрытии пула (название синхронизации)
  */
-export const closeAndExit = (poolsToClose: ConnectionPool | ConnectionPool[], prefix?: string) => {
-  close(poolsToClose, prefix);
+export const closeAndExit = async (poolsToClose: ConnectionPool | ConnectionPool[], prefix?: string) => {
+  await close(poolsToClose, prefix);
   process.exit(0);
 };
 
