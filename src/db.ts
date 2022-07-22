@@ -27,6 +27,7 @@ export const getPoolConnection = async (connectionId: string, options: TGetPoolC
   const {
     prefix = '',
     onError,
+    errorCode = 0,
   } = options; // onError = [exit|throw]
   let lb = -4;
   try {
@@ -52,7 +53,7 @@ export const getPoolConnection = async (connectionId: string, options: TGetPoolC
     pool = new sql.ConnectionPool(dbConfig);
     if (typeof pool !== 'object') {
       echo.error(prefix, `Can't create connection pool "${connectionId}"`);
-      process.exit(0);
+      process.exit(errorCode);
     }
     pools[connectionId] = pool;
     // @ts-ignore
@@ -70,7 +71,7 @@ export const getPoolConnection = async (connectionId: string, options: TGetPoolC
     const errMsg = `Cant connect to "${connectionId}" db`;
     if (onError === 'exit') {
       echo.error(prefix, `${errMsg}\n${err}\nEXIT PROCESS`);
-      process.exit(0);
+      process.exit(errorCode);
       return;
     }
     echo.mErr(err, {

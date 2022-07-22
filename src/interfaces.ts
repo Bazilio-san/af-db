@@ -119,6 +119,7 @@ export interface TGetPoolConnectionOptions {
   // 'throw' - бросить исключение.
   // Если не задано - только сообщать в консоль.
   onError?: 'exit' | 'throw'
+  errorCode?: number
 }
 
 interface IDBConfigCommon {
