@@ -65,10 +65,11 @@ export const prepareSqlString = (
   noQuotes: boolean = false,
   escapeOnlySingleQuotes: boolean = false,
 ): string | null => {
-  str = (String(str || '')).trim();
   if (!str) {
     if (str == null) {
-      if (nullable) return 'NULL';
+      if (nullable) {
+        return 'NULL';
+      }
       return default_ ? q(default_, noQuotes) : null; // Это нештатная ситуация, т.к. вернется null и поле ен получит никакого значения ( ,, )
     }
     return q(String(str), noQuotes);
