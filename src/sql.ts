@@ -431,6 +431,7 @@ export const getRecordSchema3 = async (
       correction: mergeCorrection,
       withClause,
     } = {},
+    noReturnMergeResult,
   } = options;
   const cPool = await db.getPoolConnection(connectionId, { prefix: 'getRecordSchema' });
   const request = new sql.Request(cPool);
@@ -499,11 +500,7 @@ export const getRecordSchema3 = async (
       const values = `(${packet.map((r) => (fields.map((fName) => (r[fName]))
         .join(',')))
         .join(`)\n,(`)})`;
-      const mergeSQL = `
-${'DECLARE'} @t TABLE ( act VARCHAR(20));
-DECLARE @total AS INTEGER;
-DECLARE @i AS INTEGER;
-DECLARE @u AS INTEGER;
+      let mergeSQL = `
 MERGE ${schemaAndTable} ${withClause || ''} AS target
 USING
 (
@@ -527,12 +524,21 @@ WHEN MATCHED THEN
         VALUES (
         ${insertSourceList}
         )
+`;
+      if (!noReturnMergeResult) {
+        mergeSQL = `
+${'DECLARE'} @t TABLE ( act VARCHAR(20));
+DECLARE @total AS INTEGER;
+DECLARE @i AS INTEGER;
+DECLARE @u AS INTEGER;
+${mergeSQL}
 OUTPUT $action INTO @t;
 SET @total = @@ROWCOUNT;
 SELECT @i = COUNT(*) FROM @t WHERE act = 'INSERT';
 SELECT @u = COUNT(*) FROM @t WHERE act != 'INSERT';
 SELECT @total as total, @i as inserted, @u as updated;
-                `;
+`;
+      }
       return typeof mergeCorrection === 'function' ? mergeCorrection(mergeSQL) : mergeSQL;
     },
 
@@ -543,8 +549,7 @@ SELECT @total as total, @i as inserted, @u as updated;
       const values = `(${packet.map((r) => (insertFields.map((fName) => (r[fName] === undefined ? 'NULL' : r[fName]))
         .join(',')))
         .join(`)\n,(`)})`;
-      return `INSERT INTO ${schemaAndTable} (${insertFieldsList}) ${addOutputInserted ? ' OUTPUT inserted.* ' : ''}
-                                                                  VALUES ${values}`;
+      return `INSERT INTO ${schemaAndTable} (${insertFieldsList}) ${addOutputInserted ? ' OUTPUT inserted.* ' : ''} VALUES ${values}`;
     },
 
     getUpdateSQL (record: TRecordSet) {

@@ -108,7 +108,8 @@ export interface TGetRecordSchemaOptions {
   pickFields?: string[],
   // кол-во измененных записей
   fieldTypeCorrection?: TFieldTypeCorrection,
-  mergeRules?: TMergeRules
+  mergeRules?: TMergeRules,
+  noReturnMergeResult?: boolean,
 }
 
 export interface TGetPoolConnectionOptions {
