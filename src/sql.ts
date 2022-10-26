@@ -523,8 +523,7 @@ WHEN MATCHED THEN
         )
         VALUES (
         ${insertSourceList}
-        )
-`;
+        )`;
       if (!noReturnMergeResult) {
         mergeSQL = `
 ${'DECLARE'} @t TABLE ( act VARCHAR(20));
@@ -538,6 +537,8 @@ SELECT @i = COUNT(*) FROM @t WHERE act = 'INSERT';
 SELECT @u = COUNT(*) FROM @t WHERE act != 'INSERT';
 SELECT @total as total, @i as inserted, @u as updated;
 `;
+      } else {
+        mergeSQL += `;\n`;
       }
       return typeof mergeCorrection === 'function' ? mergeCorrection(mergeSQL) : mergeSQL;
     },
