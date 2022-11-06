@@ -8,11 +8,11 @@ const U = require('af-fns');
 const sql = require('mssql');
 const echo = require('af-echo');
 
-const timezone = config.get('timezone') as string;
+const timezone = config.get<string>('timezone');
 moment.tz.setDefault(timezone);
 
-export const getFirstConfigId = () => Object.keys(config.get('database') || {}).filter((v) => !['dialect', '_common_'].includes(v))[0];
-export const getDbConfig = (connectionId: string) => config.get(`database.${connectionId}`);
+export const getFirstConfigId = () => Object.keys(config.get<any>('database') || {}).filter((v) => !['dialect', '_common_'].includes(v))[0];
+export const getDbConfig = (connectionId: string) => config.get<any>(`database.${connectionId}`);
 
 export const pools: {
   [poolId: string]: ConnectionPool
@@ -36,7 +36,17 @@ export const getPoolConnection = async (connectionId: string, options: TGetPoolC
       return pool;
     }
     lb = -8;
-    const cfg: any = config.get('database');
+    const cfg: any = config.get<any>('database');
+    const namedDbConfig = cfg[connectionId];
+    if (!namedDbConfig) {
+      const errMsg = `Missing configuration for DB id "${connectionId}"`;
+      if (onError === 'exit') {
+        echo.error(prefix, `${errMsg}\nEXIT PROCESS`);
+        process.exit(errorCode);
+        return;
+      }
+      echo.mErr(null, { helpErr, lb, msg: errMsg, thr: onError === 'throw' });
+    }
     const dbConfig = config.util.extendDeep({}, cfg._common_ || {}, cfg[connectionId]);
     lb = -12;
     if (pool?.connecting) {
