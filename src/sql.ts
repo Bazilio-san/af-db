@@ -2,7 +2,7 @@
 // noinspection SqlResolve
 import * as config from 'config';
 // eslint-disable-next-line import/no-duplicates
-import { IResult } from 'mssql';
+import { IColumnMetadata, IResult } from 'mssql';
 // eslint-disable-next-line import/no-duplicates
 import * as moment from 'moment-timezone';
 import * as _ from 'lodash';
@@ -345,7 +345,10 @@ export const prepareRecordForSQL = (
   escapeOnlySingleQuotes?: boolean,
 ) => {
   recordSchema.forEach((fieldSchema: IFieldSchema) => {
-    const { name = '_#foo#_' } = fieldSchema;
+    const { name = '_#foo#_', readOnly } = fieldSchema;
+    if (readOnly) {
+      return;
+    }
     if (Object.prototype.hasOwnProperty.call(record, name)) {
       record[name] = getValueForSQL(record[name], fieldSchema, validate, escapeOnlySingleQuotes);
     } else if ((!fieldSchema.nullable && addValues4NotNullableFields) || addMissingFields) {
@@ -397,7 +400,10 @@ export const getRecordValuesForSQL = (record: TDBRecord, recordSchema: TRecordSc
   const validate = undefined;
   const escapeOnlySingleQuotes = true;
   recordSchema.forEach((fieldSchema) => {
-    const { name = '_#foo#_' } = fieldSchema;
+    const { name = '_#foo#_', readOnly } = fieldSchema;
+    if (readOnly) {
+      return;
+    }
     if (Object.prototype.hasOwnProperty.call(record, name)) {
       recordValuesForSQL[name] = getValueForSQL(record[name], fieldSchema, validate, escapeOnlySingleQuotes);
     }
@@ -452,16 +458,20 @@ export const getRecordSchema3 = async (
     return;
   }
   const { columns } = res.recordset;
-  let schemaAssoc = Array.isArray(omitFields) ? _.omit(columns, omitFields) : columns;
+  const readOnlyFields = Object.entries(columns).filter(([, { readOnly: ro }]) => ro).map(([f]) => f);
+  const omitFields2 = [...readOnlyFields, ...(Array.isArray(omitFields) ? omitFields : [])];
+  let schemaAssoc = _.omit<IColumnMetadata>(columns, omitFields2);
   schemaAssoc = Array.isArray(pickFields) ? _.pick(schemaAssoc, pickFields) : schemaAssoc;
-  correctRecordSchema(schemaAssoc, fieldTypeCorrection);
+  correctRecordSchema(schemaAssoc as TRecordSchemaAssoc, fieldTypeCorrection);
   const schema = _.map(schemaAssoc, (fo) => (fo))
     .sort((a, b) => {
-      if (a.index > b.index) return 1;
-      if (a.index < b.index) return -1;
+      const ai = (a?.index || 0);
+      const bi = (b?.index || 0);
+      if (ai > bi) return 1;
+      if (ai < bi) return -1;
       return 0;
     });
-  const fields = schema.map(({ name }) => (name));
+  const fields = schema.map((o) => o?.name).filter(Boolean) as string[];
   const fieldsList = fields.map((fName) => `[${fName}]`)
     .join(', ');
 
