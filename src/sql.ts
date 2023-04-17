@@ -28,7 +28,7 @@ const U = require('af-fns');
 const timezone = config.get('timezone') as string;
 moment.tz.setDefault(timezone);
 
-const { dialect } = config.get('database');
+const { dialect } = config.get<any>('database');
 const IS_POSTGRES = dialect === 'postgres';
 
 // @ts-ignore
