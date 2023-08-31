@@ -10,10 +10,11 @@ import * as cache from 'memory-cache';
 import {
   IDBConfig,
   IFieldSchema,
-  IGetMergeSQLOptions,
+  IGetMergeSQLOptions, ISchemaItem,
   TDBRecord,
   TFieldName,
   TFieldTypeCorrection,
+  TGetRecordSchema3Result,
   TGetRecordSchemaOptions,
   TRecordSchema,
   TRecordSchemaAssoc,
@@ -423,10 +424,10 @@ export const getRecordSchema3 = async (
   schemaAndTable: string,
   // Массив имен полей, которые нужно удалить из схемы (не уитывается, если asArray = false)
   options: TGetRecordSchemaOptions = {} as TGetRecordSchemaOptions,
-) => {
+): Promise<TGetRecordSchema3Result | undefined> => {
   const propertyPath = `schemas.${connectionId}.${schemaAndTable}`;
 
-  let result = cache.get(propertyPath);
+  let result: TGetRecordSchema3Result | undefined = cache.get(propertyPath) as TGetRecordSchema3Result | undefined;
   if (result) {
     return result;
   }
@@ -460,17 +461,17 @@ export const getRecordSchema3 = async (
   const { columns } = res.recordset;
   const readOnlyFields = Object.entries(columns).filter(([, { readOnly: ro }]) => ro).map(([f]) => f);
   const omitFields2 = [...readOnlyFields, ...(Array.isArray(omitFields) ? omitFields : [])];
-  let schemaAssoc = _.omit<IColumnMetadata>(columns, omitFields2);
+  let schemaAssoc: Partial<IColumnMetadata> = _.omit<IColumnMetadata>(columns, omitFields2);
   schemaAssoc = Array.isArray(pickFields) ? _.pick(schemaAssoc, pickFields) : schemaAssoc;
   correctRecordSchema(schemaAssoc as TRecordSchemaAssoc, fieldTypeCorrection);
-  const schema = _.map(schemaAssoc, (fo) => (fo))
+  const schema: ISchemaItem[] = _.map(schemaAssoc, (fo) => (fo))
     .sort((a, b) => {
       const ai = (a?.index || 0);
       const bi = (b?.index || 0);
       if (ai > bi) return 1;
       if (ai < bi) return -1;
       return 0;
-    });
+    }) as ISchemaItem[];
   const fields = schema.map((o) => o?.name).filter(Boolean) as string[];
   const fieldsList = fields.map((fName) => `[${fName}]`)
     .join(', ');
@@ -506,7 +507,7 @@ export const getRecordSchema3 = async (
     withClause,
     updateFields,
     mergeIdentity,
-    getMergeSQL (packet: TRecordSet, prepareOptions: IGetMergeSQLOptions = {}) {
+    getMergeSQL (packet: TRecordSet, prepareOptions: IGetMergeSQLOptions = {}): string {
       const { preparePacket, addValues4NotNullableFields, addMissingFields, validate } = prepareOptions;
       if (preparePacket) {
         prepareDataForSQL(packet, this.schema, addValues4NotNullableFields, addMissingFields, validate);
@@ -557,7 +558,7 @@ SELECT @total as total, @i as inserted, @u as updated;
       return typeof mergeCorrection === 'function' ? mergeCorrection(mergeSQL) : mergeSQL;
     },
 
-    getInsertSQL (packet: TRecordSet, addOutputInserted = false) {
+    getInsertSQL (packet: TRecordSet, addOutputInserted = false): string {
       if (!Array.isArray(packet)) {
         packet = [packet];
       }
@@ -589,10 +590,8 @@ SELECT @total as total, @i as inserted, @u as updated;
 
 /**
  * Оборачивает инструкции SQL в транзакцию
- * @param {string} strSQL
- * @returns {string}
  */
-export const wrapTransaction = (strSQL: string) => `BEGIN TRY
+export const wrapTransaction = (strSQL: string): string => `BEGIN TRY
     BEGIN TRANSACTION;
 
     ${strSQL}

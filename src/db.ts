@@ -65,9 +65,6 @@ export const getPoolConnection = async (connectionId: string, options: TGetPoolC
       echo.error(prefix, `Can't create connection pool "${connectionId}"`);
       process.exit(errorCode);
     }
-    const { server, host, port, database: d, user, password } = dbConfig as any;
-    // @ts-ignore
-    pool._config_ = `${user}:${password}@[${server || host}:${port}].[${d}]`;
     pools[connectionId] = pool;
     // @ts-ignore
     pool._connectionId = connectionId;

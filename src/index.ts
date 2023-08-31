@@ -37,4 +37,5 @@ export {
   TMergeResult,
   TRecordKey,
   TGetPoolConnectionOptions,
+  TGetRecordSchema3Result,
 } from './interfaces';
