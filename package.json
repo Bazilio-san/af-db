@@ -1,6 +1,6 @@
 {
   "name": "af-db",
-  "version": "3.0.27",
+  "version": "3.0.28",
   "description": "A highly specialized function library",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -15,7 +15,7 @@
     "lint:fix": "eslint . --ext .ts --fix",
     "test": "jest --config jest.config.js",
     "release": "npm run lint:fix && npm run clean && npm run build && npm run test",
-    "prepack": "npm run clean && npm run build"
+    "cb": "npm run clean && npm run build"
   },
   "dependencies": {
     "af-echo": "^0.0.16",
