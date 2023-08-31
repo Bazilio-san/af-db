@@ -13,7 +13,7 @@ import {
   IGetMergeSQLOptions,
   TDBRecord,
   TFieldName,
-  TFieldTypeCorrection,
+  TFieldTypeCorrection, TGetRecordSchema3Result,
   TGetRecordSchemaOptions,
   TRecordSchema,
   TRecordSchemaAssoc,
@@ -417,10 +417,10 @@ export const getRecordSchema3 = async (
   schemaAndTable: string,
   // Массив имен полей, которые нужно удалить из схемы (не уитывается, если asArray = false)
   options: TGetRecordSchemaOptions = {} as TGetRecordSchemaOptions,
-) => {
+): Promise<TGetRecordSchema3Result | undefined> => {
   const propertyPath = `schemas.${connectionId}.${schemaAndTable}`;
 
-  let result = cache.get(propertyPath);
+  let result: TGetRecordSchema3Result | undefined = cache.get(propertyPath) as TGetRecordSchema3Result | undefined;
   if (result) {
     return result;
   }
@@ -496,7 +496,7 @@ export const getRecordSchema3 = async (
     withClause,
     updateFields,
     mergeIdentity,
-    getMergeSQL (packet: TRecordSet, prepareOptions: IGetMergeSQLOptions = {}) {
+    getMergeSQL (packet: TRecordSet, prepareOptions: IGetMergeSQLOptions = {}): string {
       const { preparePacket, addValues4NotNullableFields, addMissingFields, validate } = prepareOptions;
       if (preparePacket) {
         prepareDataForSQL(packet, this.schema, addValues4NotNullableFields, addMissingFields, validate);
@@ -547,7 +547,7 @@ SELECT @total as total, @i as inserted, @u as updated;
       return typeof mergeCorrection === 'function' ? mergeCorrection(mergeSQL) : mergeSQL;
     },
 
-    getInsertSQL (packet: TRecordSet, addOutputInserted = false) {
+    getInsertSQL (packet: TRecordSet, addOutputInserted = false): string {
       if (!Array.isArray(packet)) {
         packet = [packet];
       }
@@ -579,10 +579,8 @@ SELECT @total as total, @i as inserted, @u as updated;
 
 /**
  * Оборачивает инструкции SQL в транзакцию
- * @param {string} strSQL
- * @returns {string}
  */
-export const wrapTransaction = (strSQL: string) => `BEGIN TRY
+export const wrapTransaction = (strSQL: string): string => `BEGIN TRY
     BEGIN TRANSACTION;
 
     ${strSQL}

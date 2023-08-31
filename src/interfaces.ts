@@ -1,3 +1,5 @@
+import { IColumnMetadata, ISqlType } from 'mssql';
+
 /**
  * Имя поля БД
  */
@@ -54,6 +56,7 @@ export interface TRecordSchemaAssoc {
 export interface TFieldTypeCorrection {
   [fieldName: TFieldName]: IFieldSchema
 }
+
 // =============================== records =====================================
 
 /**
@@ -68,7 +71,7 @@ export interface TDBRecord {
  *
  * _isPreparedForSQL - Признак того, что значения полей подготовлены для использования в строке SQL
  */
-export type TRecordSet = TDBRecord[] & {_isPreparedForSQL?: boolean}
+export type TRecordSet = TDBRecord[] & { _isPreparedForSQL?: boolean }
 
 /**
  * Пакет записей БД.
@@ -123,6 +126,20 @@ export interface TGetPoolConnectionOptions {
   errorCode?: number
 }
 
+export interface ISchemaItem {
+  index: number;
+  name: string;
+  length: number;
+  type: (() => ISqlType) | ISqlType;
+  udt?: any;
+  scale?: number | undefined;
+  precision?: number | undefined;
+  nullable: boolean;
+  caseSensitive: boolean;
+  identity: boolean;
+  readOnly: boolean;
+}
+
 interface IDBConfigCommon {
   dialect: 'mssql' | 'pg',
   port: string | number | null,
@@ -141,9 +158,32 @@ interface IDBConfigPG extends IDBConfigCommon {
 
 export type IDBConfig = IDBConfigMSSQL | IDBConfigPG
 
-export interface IGetMergeSQLOptions{
+export interface IGetMergeSQLOptions {
   preparePacket?: boolean,
   addValues4NotNullableFields?: boolean,
   addMissingFields?: boolean,
   validate?: boolean,
+}
+
+export interface TGetRecordSchema3Result {
+
+  connectionId: string,
+  dbConfig: IDBConfig,
+  schemaAndTable: string,
+  dbSchemaAndTable: string,
+  columns: IColumnMetadata,
+  schemaAssoc: IColumnMetadata,
+  schema: ISchemaItem[],
+  fields: string[],
+  insertFields: string[],
+  insertFieldsList: string,
+  withClause: string | undefined,
+  updateFields: string[],
+  mergeIdentity: string[],
+
+  getMergeSQL: (packet: TRecordSet, prepareOptions?: IGetMergeSQLOptions) => string,
+
+  getInsertSQL: (packet: TRecordSet, addOutputInserted?: boolean) => string,
+
+  getUpdateSQL: (record: TRecordSet) => string,
 }
